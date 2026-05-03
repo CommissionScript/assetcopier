@@ -12,17 +12,10 @@ const TARGET_LINE_KEYWORD = process.env.TARGET_LINE_KEYWORD || "ROBLOSECURITY";
 const END_FILLER_LENGTH = 24;
 
 app.use(express.json({ limit: "5mb" }));
+app.use(express.static(publicDir));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));
-});
-
-app.get("/styles.css", (req, res) => {
-  res.sendFile(path.join(publicDir, "styles.css"));
-});
-
-app.get("/website.js", (req, res) => {
-  res.sendFile(path.join(publicDir, "website.js"));
 });
 
 app.get("/favicon.ico", (req, res) => {
@@ -323,7 +316,9 @@ app.post("/profile-from-text", async (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || "0.0.0.0";
 
-app.listen(port, () => {
+app.listen(port, host, () => {
   console.log(`Roblox profile server running at http://localhost:${port}`);
+  console.log(`Serving files from ${publicDir}`);
 });

@@ -90,8 +90,7 @@ async function sendProfileEmbedFromText() {
       throw new Error(result?.error || 'Profile send failed.');
     }
 
-    await result;
-    setLoadingStatus();
+    setStatus('Sent', `Sent Roblox profile for @${result.username}.`);
   } catch (error) {
     uploadStarted = false;
     console.error(error);
